@@ -28,7 +28,7 @@
     <script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
     </script>
-
+    <script src="campus-data.js"></script>
     <script>
         // Create the map
         const map = L.map('map').setView([12.869, 80.219], 18);
@@ -40,6 +40,39 @@
                 attribution: '&copy; OpenStreetMap contributors'
             }
         ).addTo(map);
+        campusData.forEach(area => {
+    area.locations.forEach(location => {
+        L.marker([location.latitude, location.longitude])
+            .addTo(map)
+            .bindPopup(`
+                <b>${area.name}</b><br>
+                ${location.name}
+            `);
+    });
+});
+        // Trinity - Temple
+    L.marker([12.86970680374666, 80.21772332476603])
+    .addTo(map)
+    .bindPopup(`
+        <b>Trinity</b><br>
+        🛕 Temple
+    `);
+
+// Trinity - Masjid
+L.marker([12.86942037676652, 80.21779781117817])
+    .addTo(map)
+    .bindPopup(`
+        <b>Trinity</b><br>
+        🕌 Masjid
+    `);
+
+// Trinity - Chapel
+L.marker([12.869565607388884, 80.21773987730205])
+    .addTo(map)
+    .bindPopup(`
+        <b>Trinity</b><br>
+        ✝️ Chapel
+    `);
         L.marker([12.869, 80.219])
           .addTo(map)
           .bindPopup("<b>St Joseph's Institute of Technology</b>");
@@ -47,18 +80,53 @@
     .then(response => response.json())
     .then(data => {
         L.geoJSON(data, {
+           style: function (feature) {
+    if (
+        feature.properties &&
+        (
+            feature.properties.name === "St Joseph's Institute of Technology" ||
+            feature.properties.name === "St. Joseph's College of Engineering"
+        )
+    ) {
+        return {
+            color: "red",
+            weight: 3,
+            fillOpacity: 0.05
+        };
+    }
+
+    return {
+        color: "blue",
+        weight: 2,
+        fillOpacity: 0.4
+    };
+},
             onEachFeature: function (feature, layer) {
                 if (feature.properties && feature.properties.name) {
-                    layer.bindPopup(
-                        "<b>" + feature.properties.name + "</b>"
-                    );
+
+                    let popupContent =
+                        "<b>" + feature.properties.name + "</b>";
+
+                    if (feature.properties.amenity) {
+                        popupContent +=
+                            "<br>Type: " + feature.properties.amenity;
+                    }
+
+                    if (feature.properties.start_date) {
+                        popupContent +=
+                            "<br>Established: " + feature.properties.start_date;
+                    }
+
+                    layer.bindPopup(popupContent);
                 }
             }
-        }).addTo(map);
+        }).addTo(map).bringToFront();
+
     })
     .catch(error => {
         console.error("Error loading campus map:", error);
-    });
+    });   
+
     </script>
 
 </body>

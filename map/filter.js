@@ -2,33 +2,46 @@ const fs = require("fs");
 const osmtogeojson = require("osmtogeojson");
 const { DOMParser } = require("@xmldom/xmldom");
 
-// Read OSM file
 const osmData = fs.readFileSync("map.osm", "utf8");
-
-// Convert OSM XML to GeoJSON
 const osmXml = new DOMParser().parseFromString(osmData, "text/xml");
 const geojson = osmtogeojson(osmXml);
 
-// Find your college boundary
-const campusBoundary = geojson.features.find(
+// Find both college boundaries
+const sjitBoundary = geojson.features.find(
     feature =>
-        feature.properties?.name === "St Joseph's Institute of Technology"
+        feature.properties?.name ===
+        "St Joseph's Institute of Technology"
 );
 
-if (!campusBoundary) {
-    console.log("College boundary not found!");
+const engineeringBoundary = geojson.features.find(
+    feature =>
+        feature.properties?.name ===
+        "St. Joseph's College of Engineering"
+);
+
+if (!sjitBoundary) {
+    console.log("SJIT boundary not found!");
     process.exit();
 }
 
-// Get the boundary coordinates
-const boundary = campusBoundary.geometry.coordinates[0];
+if (!engineeringBoundary) {
+    console.log("Engineering College boundary not found!");
+    process.exit();
+}
 
-// Check whether a point is inside the college boundary
+// Get polygon coordinates
+const sjitPolygon = sjitBoundary.geometry.coordinates[0];
+const engineeringPolygon = engineeringBoundary.geometry.coordinates[0];
+
 function isInside(point, polygon) {
     const [x, y] = point;
     let inside = false;
 
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    for (
+        let i = 0, j = polygon.length - 1;
+        i < polygon.length;
+        j = i++
+    ) {
         const [xi, yi] = polygon[i];
         const [xj, yj] = polygon[j];
 
@@ -44,7 +57,6 @@ function isInside(point, polygon) {
     return inside;
 }
 
-// Find a representative point for each feature
 function getCenter(feature) {
     const coords = [];
 
@@ -58,40 +70,60 @@ function getCenter(feature) {
 
     collect(feature.geometry.coordinates);
 
-    const x = coords.reduce((sum, p) => sum + p[0], 0) / coords.length;
-    const y = coords.reduce((sum, p) => sum + p[1], 0) / coords.length;
+    const x =
+        coords.reduce((sum, p) => sum + p[0], 0) /
+        coords.length;
+
+    const y =
+        coords.reduce((sum, p) => sum + p[1], 0) /
+        coords.length;
 
     return [x, y];
 }
 
-// Keep only features inside your college
+// Colleges that we DON'T want
+const unwanted = [
+    "Sathyabama Institute of Science and Technology",
+    "Jeppiaar Engineering College"
+];
+
 const filteredFeatures = geojson.features.filter(feature => {
     if (!feature.geometry) return false;
 
-    // Always keep the college boundary
+    const name = feature.properties?.name;
+
+    // Remove unrelated nearby colleges
+    if (unwanted.includes(name)) {
+        return false;
+    }
+
+    // Always keep both main college boundaries
     if (
-        feature.properties?.name ===
-        "St Joseph's Institute of Technology"
+        name === "St Joseph's Institute of Technology" ||
+        name === "St. Joseph's College of Engineering"
     ) {
         return true;
     }
 
+    // Find the center of the feature
     const center = getCenter(feature);
 
-    return isInside(center, boundary);
+    // Keep buildings/features inside either college boundary
+    return (
+        isInside(center, sjitPolygon) ||
+        isInside(center, engineeringPolygon)
+    );
 });
 
-// Create filtered GeoJSON
 const filteredGeoJSON = {
     type: "FeatureCollection",
     features: filteredFeatures
 };
 
-// Save it
 fs.writeFileSync(
     "campus-only.geojson",
     JSON.stringify(filteredGeoJSON, null, 2)
 );
 
-console.log("Your college campus map created successfully!");
+console.log("Combined St. Joseph's campus map created!");
 console.log("Features kept:", filteredFeatures.length);
