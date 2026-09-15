@@ -1,7 +1,7 @@
 const campusData = [
     {
         name: "Trinity",
-        type: "religious",
+        type: "Religious",
         locations: [
             {
                 name: "Temple",
@@ -19,5 +19,29 @@ const campusData = [
                 longitude: 80.21773987730205
             }
         ]
+    },
+
+    {
+        name: "Exam Hall",
+        type: "Academic",
+        description: "Located above the Mess and used for examinations."
+    },
+
+    {
+        name: "Auditorium",
+        type: "Academic",
+        description: "Located above the Mess and used for college events, seminars and programs."
+    },
+
+    {
+        name: "Girls Mess",
+        type: "Food & Dining",
+        description: "Dining facility for female students."
+    },
+
+    {
+        name: "Boys Mess",
+        type: "Food & Dining",
+        description: "Dining facility for male students."
     }
 ];

@@ -1,134 +1,758 @@
-```html
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Smart Campus Map</title>
+
+    <title>Smart Campus | Campus Map</title>
 
     <!-- Leaflet CSS -->
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    >
 
     <style>
-        #map {
-            height: 600px;
-            width: 100%;
+
+        * {
+            box-sizing: border-box;
         }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            background: #123c69;
+            color: white;
+            padding: 18px 30px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header span {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+
+        /* =========================
+           MAIN CONTENT
+        ========================= */
+
+        .container {
+            max-width: 1400px;
+            margin: 25px auto;
+            padding: 0 20px;
+        }
+
+        .map-title {
+            margin-bottom: 15px;
+        }
+
+        .map-title h2 {
+            margin: 0 0 5px;
+            font-size: 22px;
+        }
+
+        .map-title p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           MAP CARD
+        ========================= */
+
+        .map-card {
+            background: white;
+            padding: 10px;
+            border-radius: 14px;
+
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, 0.10);
+        }
+
+        #map {
+            height: 650px;
+            width: 100%;
+            border-radius: 10px;
+        }
+
+
+        /* =========================
+           CUSTOM MARKERS
+        ========================= */
+
+        .custom-marker {
+            width: 34px;
+            height: 34px;
+
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: white;
+
+            font-size: 17px;
+
+            border: 3px solid white;
+
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.30);
+        }
+
+
+        .temple-marker {
+            background: #d97706;
+        }
+
+
+        .masjid-marker {
+            background: #15803d;
+        }
+
+
+        .chapel-marker {
+            background: #7c3aed;
+        }
+
+
+        /* =========================
+           POPUP
+        ========================= */
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+        }
+
+        .leaflet-popup-content {
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 14px 18px;
+        }
+
+
+        /* =========================
+           LEGEND
+        ========================= */
+
+        .legend {
+            background: white;
+
+            padding: 12px 15px;
+
+            line-height: 22px;
+
+            border-radius: 8px;
+
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .legend-item {
+            font-size: 13px;
+        }
+
+        .legend-box {
+            display: inline-block;
+
+            width: 12px;
+            height: 12px;
+
+            margin-right: 6px;
+
+            border-radius: 3px;
+        }
+
+        .academic {
+            background: #3b82f6;
+        }
+
+        .hostel {
+            background: #22c55e;
+        }
+
+        .dining {
+            background: #f59e0b;
+        }
+
+        .religious {
+            background: #8b5cf6;
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        .footer {
+            text-align: center;
+
+            padding: 18px;
+
+            color: #6b7280;
+
+            font-size: 13px;
+        }
+
+
     </style>
+
 </head>
+
 
 <body>
 
-    <h1>Smart Campus Map</h1>
 
-    <div id="map"></div>
+    <!-- =========================
+         HEADER
+    ========================= -->
 
-    <!-- Leaflet JavaScript -->
+    <header class="header">
+
+        <h1>
+            🏫 Smart Campus
+        </h1>
+
+        <span>
+            Interactive Campus Map
+        </span>
+
+    </header>
+
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================= -->
+
+    <main class="container">
+
+
+        <div class="map-title">
+
+            <h2>
+                Campus Map
+            </h2>
+
+            <p>
+                Explore buildings, facilities and important
+                locations across the campus.
+            </p>
+
+        </div>
+
+
+
+        <!-- MAP -->
+
+        <div class="map-card">
+
+            <div id="map"></div>
+
+        </div>
+
+
+    </main>
+
+
+
+    <!-- =========================
+         FOOTER
+    ========================= -->
+
+    <footer class="footer">
+
+        Smart Campus Visitor Management & Analytics System
+
+    </footer>
+
+
+
+    <!-- Leaflet JS -->
+
     <script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
     </script>
-    <script src="campus-data.js"></script>
-    <script>
-        // Create the map
-        const map = L.map('map').setView([12.869, 80.219], 18);
 
-        // Add OpenStreetMap map tiles
+
+
+    <!-- Campus Data -->
+
+    <script src="campus-data.js"></script>
+
+
+
+    <script>
+
+
+        // =========================
+        // CREATE MAP
+        // =========================
+
+        const map = L.map('map').setView(
+            [12.869, 80.219],
+            18
+        );
+
+
+
+        // =========================
+        // OPEN STREET MAP
+        // =========================
+
         L.tileLayer(
             'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
-                attribution: '&copy; OpenStreetMap contributors'
+                attribution:
+                    '&copy; OpenStreetMap contributors'
             }
         ).addTo(map);
+
+
+
+        // =========================
+        // CUSTOM ICON FUNCTION
+        // =========================
+
+        function createIcon(
+            symbol,
+            markerClass
+        ) {
+
+            return L.divIcon({
+
+                className: "",
+
+                html: `
+                    <div class="
+                        custom-marker
+                        ${markerClass}
+                    ">
+                        ${symbol}
+                    </div>
+                `,
+
+                iconSize: [34, 34],
+
+                iconAnchor: [17, 17],
+
+                popupAnchor: [0, -17]
+
+            });
+
+        }
+
+
+
+        // =========================
+        // CAMPUS MARKERS
+        // =========================
+
         campusData.forEach(area => {
-    area.locations.forEach(location => {
-        L.marker([location.latitude, location.longitude])
-            .addTo(map)
-            .bindPopup(`
-                <b>${area.name}</b><br>
-                ${location.name}
-            `);
-    });
-});
-        // Trinity - Temple
-    L.marker([12.86970680374666, 80.21772332476603])
-    .addTo(map)
-    .bindPopup(`
-        <b>Trinity</b><br>
-        🛕 Temple
-    `);
 
-// Trinity - Masjid
-L.marker([12.86942037676652, 80.21779781117817])
-    .addTo(map)
-    .bindPopup(`
-        <b>Trinity</b><br>
-        🕌 Masjid
-    `);
 
-// Trinity - Chapel
-L.marker([12.869565607388884, 80.21773987730205])
-    .addTo(map)
-    .bindPopup(`
-        <b>Trinity</b><br>
-        ✝️ Chapel
-    `);
-        L.marker([12.869, 80.219])
-          .addTo(map)
-          .bindPopup("<b>St Joseph's Institute of Technology</b>");
-       fetch("campus-only.geojson")
-    .then(response => response.json())
-    .then(data => {
-        L.geoJSON(data, {
-           style: function (feature) {
-    if (
-        feature.properties &&
-        (
-            feature.properties.name === "St Joseph's Institute of Technology" ||
-            feature.properties.name === "St. Joseph's College of Engineering"
-        )
-    ) {
-        return {
-            color: "red",
-            weight: 3,
-            fillOpacity: 0.05
-        };
-    }
+            if (area.locations) {
 
-    return {
-        color: "blue",
-        weight: 2,
-        fillOpacity: 0.4
-    };
-},
-            onEachFeature: function (feature, layer) {
-                if (feature.properties && feature.properties.name) {
 
-                    let popupContent =
-                        "<b>" + feature.properties.name + "</b>";
+                area.locations.forEach(location => {
 
-                    if (feature.properties.amenity) {
-                        popupContent +=
-                            "<br>Type: " + feature.properties.amenity;
+
+                    // Default icon
+
+                    let icon = null;
+
+
+
+                    // Temple
+
+                    if (
+                        location.name
+                            .toLowerCase()
+                            .includes("temple")
+                    ) {
+
+                        icon = createIcon(
+                            "🛕",
+                            "temple-marker"
+                        );
+
                     }
 
-                    if (feature.properties.start_date) {
-                        popupContent +=
-                            "<br>Established: " + feature.properties.start_date;
+
+
+                    // Masjid
+
+                    else if (
+                        location.name
+                            .toLowerCase()
+                            .includes("masjid")
+                    ) {
+
+                        icon = createIcon(
+                            "☪",
+                            "masjid-marker"
+                        );
+
                     }
 
-                    layer.bindPopup(popupContent);
-                }
+
+
+                    // Chapel
+
+                    else if (
+                        location.name
+                            .toLowerCase()
+                            .includes("chapel")
+                    ) {
+
+                        icon = createIcon(
+                            "✝",
+                            "chapel-marker"
+                        );
+
+                    }
+
+
+
+                    // Popup
+
+                    let popupContent = `
+
+                        <b>${area.name}</b>
+
+                        <br>
+
+                        ${location.name}
+
+                    `;
+
+
+
+                    // Description
+
+                    if (location.description) {
+
+                        popupContent += `
+
+                            <br><br>
+
+                            ${location.description}
+
+                        `;
+
+                    }
+
+
+
+                    // Add marker
+
+                    L.marker(
+
+                        [
+                            location.latitude,
+                            location.longitude
+                        ],
+
+                        icon
+                            ? { icon: icon }
+                            : {}
+
+                    )
+
+                    .addTo(map)
+
+                    .bindPopup(popupContent);
+
+
+                });
+
             }
-        }).addTo(map).bringToFront();
 
-    })
-    .catch(error => {
-        console.error("Error loading campus map:", error);
-    });   
+        });
+
+
+
+        // =========================
+        // LOAD GEOJSON
+        // =========================
+
+        fetch("campus-only.geojson")
+
+            .then(response => response.json())
+
+            .then(data => {
+
+
+                L.geoJSON(data, {
+
+
+                    // =========================
+                    // BUILDING STYLE
+                    // =========================
+
+                    style: function(feature) {
+
+
+                        // College boundary
+
+                        if (
+
+                            feature.properties &&
+
+                            (
+
+                                feature.properties.name ===
+                                "St Joseph's Institute of Technology"
+
+                                ||
+
+                                feature.properties.name ===
+                                "St. Joseph's College of Engineering"
+
+                            )
+
+                        ) {
+
+
+                            return {
+
+                                color: "#123c69",
+
+                                weight: 3,
+
+                                fillOpacity: 0.04,
+
+                                interactive: false
+
+                            };
+
+                        }
+
+
+
+                        // Other buildings
+
+                        return {
+
+                            color: "#3b82f6",
+
+                            weight: 2,
+
+                            fillOpacity: 0.25
+
+                        };
+
+
+                    },
+
+
+
+                    // =========================
+                    // BUILDING POPUPS
+                    // =========================
+
+                    onEachFeature:
+                        function(feature, layer) {
+
+
+                            if (
+
+                                feature.properties &&
+
+                                feature.properties.name
+
+                            ) {
+
+
+                                let popupContent =
+
+                                    "<b>" +
+
+                                    feature.properties.name +
+
+                                    "</b>";
+
+
+
+                                // Building type
+
+                                if (
+                                    feature.properties.amenity
+                                ) {
+
+                                    popupContent +=
+
+                                        "<br>Type: " +
+
+                                        feature.properties.amenity;
+
+                                }
+
+
+
+                                // Established date
+
+                                if (
+                                    feature.properties.start_date
+                                ) {
+
+                                    popupContent +=
+
+                                        "<br>Established: " +
+
+                                        feature.properties.start_date;
+
+                                }
+
+
+
+                                // Add popup
+
+                                layer.bindPopup(
+                                    popupContent
+                                );
+
+
+                            }
+
+                        }
+
+
+                })
+
+                .addTo(map);
+
+
+            })
+
+
+            // =========================
+            // ERROR
+            // =========================
+
+            .catch(error => {
+
+                console.error(
+                    "Error loading campus map:",
+                    error
+                );
+
+            });
+
+
+
+        // =========================
+        // LEGEND
+        // =========================
+
+        const legend = L.control({
+
+            position: "bottomright"
+
+        });
+
+
+
+        legend.onAdd = function() {
+
+
+            const div =
+                L.DomUtil.create(
+                    "div",
+                    "legend"
+                );
+
+
+
+            div.innerHTML = `
+
+                <div class="legend-title">
+                    Campus Locations
+                </div>
+
+
+                <div class="legend-item">
+
+                    <span
+                        class="legend-box academic">
+                    </span>
+
+                    Academic
+
+                </div>
+
+
+                <div class="legend-item">
+
+                    <span
+                        class="legend-box hostel">
+                    </span>
+
+                    Hostel
+
+                </div>
+
+
+                <div class="legend-item">
+
+                    <span
+                        class="legend-box dining">
+                    </span>
+
+                    Dining
+
+                </div>
+
+
+                <div class="legend-item">
+
+                    <span
+                        class="legend-box religious">
+                    </span>
+
+                    Religious
+
+                </div>
+
+            `;
+
+
+            return div;
+
+        };
+
+
+
+        legend.addTo(map);
+
 
     </script>
 
+
 </body>
+
 </html>
-```
