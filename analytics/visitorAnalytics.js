@@ -1,4 +1,4 @@
-const Visitor = require("../models/Visitor");
+const Visitor = require("../backend/models/Visitor");
 
 
 // Get visitor statistics
@@ -28,6 +28,11 @@ const getVisitorStats = async (req, res) => {
                     _id: "$visitorType",
                     count: { $sum: 1 }
                 }
+            },
+            {
+                $sort: {
+                    count: -1
+                }
             }
         ]);
 
@@ -56,6 +61,53 @@ const getVisitorStats = async (req, res) => {
                 : 0;
 
 
+        // Visitors grouped by date
+        const visitorsByDate = await Visitor.aggregate([
+            {
+                $group: {
+                    _id: {
+                        $dateToString: {
+                            format: "%Y-%m-%d",
+                            date: "$checkInTime"
+                        }
+                    },
+                    count: {
+                        $sum: 1
+                    }
+                }
+            },
+            {
+                $sort: {
+                    _id: 1
+                }
+            }
+        ]);
+        // Visitors grouped by destination
+const visitorsByDestination = await Visitor.aggregate([
+    {
+        $match: {
+            destination: {
+                $ne: ""
+            }
+        }
+    },
+    {
+        $group: {
+            _id: "$destination",
+            count: {
+                $sum: 1
+            }
+        }
+    },
+    {
+        $sort: {
+            count: -1
+        }
+    }
+]);
+
+
+        // Send statistics
         res.json({
             success: true,
 
@@ -64,7 +116,9 @@ const getVisitorStats = async (req, res) => {
                 activeVisitors,
                 completedVisits,
                 averageDuration,
-                visitorsByType
+                visitorsByType,
+                visitorsByDate,
+                visitorsByDestination
             }
         });
 
