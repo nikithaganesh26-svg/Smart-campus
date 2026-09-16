@@ -1,0 +1,24 @@
+{
+  "name": "smart-campus",
+  "version": "1.0.0",
+  "description": "Team project development Repo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nikithaganesh26-svg/Smart-campus.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nikithaganesh26-svg/Smart-campus/issues"
+  },
+  "homepage": "https://github.com/nikithaganesh26-svg/Smart-campus#readme",
+  "dependencies": {
+    "osmtogeojson": "^3.0.0-beta.5"
+  }
+}
