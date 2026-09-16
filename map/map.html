@@ -1,273 +1,213 @@
 <!DOCTYPE html>
-<html>
-<head>
+<html lang="en">
 
-    <title>Smart Campus | Campus Map</title>
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Campus Map</title>
 
     <!-- Leaflet CSS -->
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    >
+    />
 
     <style>
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             background: #f4f7fb;
             color: #1f2937;
         }
 
-
-        /* =========================
-           HEADER
-        ========================= */
+        /* Header */
 
         .header {
-            background: #123c69;
+            background: #123b63;
             color: white;
-            padding: 18px 30px;
-
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 18px 25px;
+            text-align: center;
         }
 
         .header h1 {
-            margin: 0;
-            font-size: 24px;
+            font-size: 25px;
+            margin-bottom: 5px;
         }
 
-        .header span {
+        .header p {
             font-size: 14px;
             opacity: 0.9;
         }
 
-
-        /* =========================
-           MAIN CONTENT
-        ========================= */
+        /* Main container */
 
         .container {
+            width: 95%;
             max-width: 1400px;
             margin: 25px auto;
-            padding: 0 20px;
         }
 
-        .map-title {
-            margin-bottom: 15px;
-        }
-
-        .map-title h2 {
-            margin: 0 0 5px;
-            font-size: 22px;
-        }
-
-        .map-title p {
-            margin: 0;
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-
-        /* =========================
-           MAP CARD
-        ========================= */
+        /* Map card */
 
         .map-card {
             background: white;
-            padding: 10px;
             border-radius: 14px;
-
-            box-shadow:
-                0 4px 18px rgba(0, 0, 0, 0.10);
+            padding: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
         }
 
         #map {
-            height: 650px;
             width: 100%;
+            height: 650px;
             border-radius: 10px;
+            overflow: hidden;
         }
 
-
-        /* =========================
-           CUSTOM MARKERS
-        ========================= */
-
-        .custom-marker {
-            width: 34px;
-            height: 34px;
-
-            border-radius: 50%;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            color: white;
-
-            font-size: 17px;
-
-            border: 3px solid white;
-
-            box-shadow:
-                0 2px 8px rgba(0, 0, 0, 0.30);
-        }
-
-
-        .temple-marker {
-            background: #d97706;
-        }
-
-
-        .masjid-marker {
-            background: #15803d;
-        }
-
-
-        .chapel-marker {
-            background: #7c3aed;
-        }
-
-
-        /* =========================
-           POPUP
-        ========================= */
-
-        .leaflet-popup-content-wrapper {
-            border-radius: 10px;
-        }
-
-        .leaflet-popup-content {
-            font-size: 14px;
-            line-height: 1.6;
-            margin: 14px 18px;
-        }
-
-
-        /* =========================
-           LEGEND
-        ========================= */
+        /* Legend */
 
         .legend {
             background: white;
-
             padding: 12px 15px;
-
-            line-height: 22px;
-
             border-radius: 8px;
-
-            box-shadow:
-                0 2px 8px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+            line-height: 24px;
+            font-size: 13px;
         }
 
         .legend-title {
             font-weight: bold;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
+            font-size: 14px;
         }
 
         .legend-item {
-            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .legend-box {
-            display: inline-block;
-
-            width: 12px;
-            height: 12px;
-
-            margin-right: 6px;
-
+            width: 14px;
+            height: 14px;
             border-radius: 3px;
         }
 
         .academic {
-            background: #3b82f6;
+            background: #42a5f5;
         }
 
         .hostel {
-            background: #22c55e;
+            background: #66bb6a;
         }
 
-        .dining {
-            background: #f59e0b;
+        .mess {
+            background: #ff9800;
+        }
+
+        .campus {
+            background: #dceaf7;
+            border: 2px solid #123b63;
         }
 
         .religious {
-            background: #8b5cf6;
+            background: #8e44ad;
+            border-radius: 50%;
         }
 
+        /* Religious markers */
 
-        /* =========================
-           FOOTER
-        ========================= */
+        .religious-marker {
+            width: 15px;
+            height: 15px;
+            background: #8e44ad;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        }
+
+        /* Building popup */
+
+        .popup-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #123b63;
+            margin-bottom: 5px;
+        }
+
+        .popup-type {
+            font-size: 13px;
+            color: #555;
+        }
+
+        .popup-info {
+            margin-top: 7px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        /* Footer */
 
         .footer {
             text-align: center;
-
-            padding: 18px;
-
-            color: #6b7280;
-
+            margin: 15px 0 25px;
             font-size: 13px;
+            color: #6b7280;
         }
 
+        /* Mobile */
+
+        @media (max-width: 768px) {
+
+            .header h1 {
+                font-size: 21px;
+            }
+
+            .container {
+                width: 98%;
+                margin: 12px auto;
+            }
+
+            #map {
+                height: 550px;
+            }
+
+            .map-card {
+                padding: 7px;
+            }
+
+        }
 
     </style>
 
 </head>
 
-
 <body>
 
-
-    <!-- =========================
-         HEADER
-    ========================= -->
+    <!-- Header -->
 
     <header class="header">
 
-        <h1>
-            🏫 Smart Campus
-        </h1>
+        <h1>Smart Campus</h1>
 
-        <span>
+        <p>
             Interactive Campus Map
-        </span>
+        </p>
 
     </header>
 
 
-
-    <!-- =========================
-         MAIN CONTENT
-    ========================= -->
+    <!-- Main -->
 
     <main class="container">
-
-
-        <div class="map-title">
-
-            <h2>
-                Campus Map
-            </h2>
-
-            <p>
-                Explore buildings, facilities and important
-                locations across the campus.
-            </p>
-
-        </div>
-
-
-
-        <!-- MAP -->
 
         <div class="map-card">
 
@@ -275,21 +215,12 @@
 
         </div>
 
-
     </main>
 
 
-
-    <!-- =========================
-         FOOTER
-    ========================= -->
-
-    <footer class="footer">
-
+    <div class="footer">
         Smart Campus Visitor Management & Analytics System
-
-    </footer>
-
+    </div>
 
 
     <!-- Leaflet JS -->
@@ -299,194 +230,281 @@
     </script>
 
 
-
     <!-- Campus Data -->
 
     <script src="campus-data.js"></script>
+<script>
+
+    /* ============================================================
+       MAP INITIALIZATION
+    ============================================================ */
+
+    const map = L.map("map", {
+        zoomControl: true,
+        attributionControl: true
+    });
 
 
+    /* ============================================================
+       OPENSTREETMAP TILE LAYER
+    ============================================================ */
 
-    <script>
-
-
-        // =========================
-        // CREATE MAP
-        // =========================
-
-        const map = L.map('map').setView(
-            [12.869, 80.219],
-            18
-        );
-
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 20,
+            attribution: '&copy; OpenStreetMap contributors'
+        }
+    ).addTo(map);
 
 
-        // =========================
-        // OPEN STREET MAP
-        // =========================
+    /* ============================================================
+       DEFAULT MAP LOCATION
+    ============================================================ */
 
-        L.tileLayer(
-            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            {
-                attribution:
-                    '&copy; OpenStreetMap contributors'
-            }
-        ).addTo(map);
+    map.setView(
+        [12.8695, 80.2165],
+        17
+    );
 
 
+    /* ============================================================
+       BUILDING STYLE
+    ============================================================ */
 
-        // =========================
-        // CUSTOM ICON FUNCTION
-        // =========================
+    function getBuildingStyle(feature) {
 
-        function createIcon(
-            symbol,
-            markerClass
+        const properties = feature.properties || {};
+
+        const name = properties.name || "";
+
+        const building = properties.building || "";
+
+
+        /* --------------------------------------------------------
+           COLLEGE BOUNDARY
+        -------------------------------------------------------- */
+
+        if (
+            name === "St Joseph's Institute of Technology" ||
+            name === "St. Joseph's College of Engineering"
         ) {
 
-            return L.divIcon({
-
-                className: "",
-
-                html: `
-                    <div class="
-                        custom-marker
-                        ${markerClass}
-                    ">
-                        ${symbol}
-                    </div>
-                `,
-
-                iconSize: [34, 34],
-
-                iconAnchor: [17, 17],
-
-                popupAnchor: [0, -17]
-
-            });
+            return {
+                color: "#123b63",
+                weight: 3,
+                fillColor: "#dceaf7",
+                fillOpacity: 0.08
+            };
 
         }
 
 
+        /* --------------------------------------------------------
+           HOSTEL
+        -------------------------------------------------------- */
 
-        // =========================
-        // CAMPUS MARKERS
-        // =========================
+        if (
+            name.toLowerCase().includes("hostel") ||
+            building === "dormitory"
+        ) {
 
-        campusData.forEach(area => {
+            return {
+                color: "#2e7d32",
+                weight: 2,
+                fillColor: "#66bb6a",
+                fillOpacity: 0.45
+            };
 
-
-            if (area.locations) {
-
-
-                area.locations.forEach(location => {
-
-
-                    // Default icon
-
-                    let icon = null;
-
-
-
-                    // Temple
-
-                    if (
-                        location.name
-                            .toLowerCase()
-                            .includes("temple")
-                    ) {
-
-                        icon = createIcon(
-                            "🛕",
-                            "temple-marker"
-                        );
-
-                    }
+        }
 
 
+        /* --------------------------------------------------------
+           MESS
+        -------------------------------------------------------- */
 
-                    // Masjid
+        if (
+            name.toLowerCase().includes("mess")
+        ) {
 
-                    else if (
-                        location.name
-                            .toLowerCase()
-                            .includes("masjid")
-                    ) {
+            return {
+                color: "#e65100",
+                weight: 2,
+                fillColor: "#ff9800",
+                fillOpacity: 0.45
+            };
 
-                        icon = createIcon(
-                            "☪",
-                            "masjid-marker"
-                        );
-
-                    }
-
-
-
-                    // Chapel
-
-                    else if (
-                        location.name
-                            .toLowerCase()
-                            .includes("chapel")
-                    ) {
-
-                        icon = createIcon(
-                            "✝",
-                            "chapel-marker"
-                        );
-
-                    }
+        }
 
 
+        /* --------------------------------------------------------
+           NORMAL BUILDING
+        -------------------------------------------------------- */
 
-                    // Popup
+        return {
+            color: "#1565c0",
+            weight: 2,
+            fillColor: "#42a5f5",
+            fillOpacity: 0.35
+        };
 
-                    let popupContent = `
-
-                        <b>${area.name}</b>
-
-                        <br>
-
-                        ${location.name}
-
-                    `;
-
-
-
-                    // Description
-
-                    if (location.description) {
-
-                        popupContent += `
-
-                            <br><br>
-
-                            ${location.description}
-
-                        `;
-
-                    }
+    }
 
 
+    /* ============================================================
+       STORE ALL BUILDING LAYERS
+    ============================================================ */
 
-                    // Add marker
+    let allBuildingLayers = [];
 
-                    L.marker(
 
-                        [
-                            location.latitude,
-                            location.longitude
-                        ],
+    /* ============================================================
+       RESET BUILDING STYLES
+    ============================================================ */
 
-                        icon
-                            ? { icon: icon }
-                            : {}
+    function resetBuildingStyles() {
 
-                    )
+        allBuildingLayers.forEach(function (item) {
 
-                    .addTo(map)
+            item.layer.isSelected = false;
 
-                    .bindPopup(popupContent);
+            item.layer.setStyle(
+                getBuildingStyle(item.feature)
+            );
 
+        });
+
+    }
+
+
+    /* ============================================================
+       BUILDING POPUP + CLICK
+    ============================================================ */
+
+    function setupBuildingInteraction(feature, layer) {
+
+        const properties =
+            feature.properties || {};
+
+
+        const name =
+            properties.name || "Building";
+
+
+        const building =
+            properties.building || "Not specified";
+
+
+        const amenity =
+            properties.amenity || "";
+
+
+        const startDate =
+            properties.start_date || "";
+
+
+        /* --------------------------------------------------------
+           POPUP
+        -------------------------------------------------------- */
+
+        let popupHTML = `
+
+            <div>
+
+                <div class="popup-title">
+                    ${name}
+                </div>
+
+        `;
+
+
+        if (building) {
+
+            popupHTML += `
+
+                <div class="popup-type">
+                    Building: ${building}
+                </div>
+
+            `;
+
+        }
+
+
+        if (amenity) {
+
+            popupHTML += `
+
+                <div class="popup-info">
+                    Type: ${amenity}
+                </div>
+
+            `;
+
+        }
+
+
+        if (startDate) {
+
+            popupHTML += `
+
+                <div class="popup-info">
+                    Date: ${startDate}
+                </div>
+
+            `;
+
+        }
+
+
+        popupHTML += `
+
+            </div>
+
+        `;
+
+
+        /* --------------------------------------------------------
+           BIND POPUP DIRECTLY TO ACTUAL OSM FOOTPRINT
+        -------------------------------------------------------- */
+
+        layer.bindPopup(popupHTML);
+
+
+        /* --------------------------------------------------------
+           CLICK
+        -------------------------------------------------------- */
+
+        layer.on("click", function () {
+
+            resetBuildingStyles();
+
+            layer.isSelected = true;
+
+            layer.setStyle({
+
+                weight: 4,
+                fillOpacity: 0.65
+
+            });
+
+            layer.bringToFront();
+
+        });
+
+
+        /* --------------------------------------------------------
+           MOUSE HOVER
+        -------------------------------------------------------- */
+
+        layer.on("mouseover", function () {
+
+            if (!layer.isSelected) {
+
+                layer.setStyle({
+
+                    weight: 3,
+                    fillOpacity: 0.5
 
                 });
 
@@ -495,190 +513,356 @@
         });
 
 
+        layer.on("mouseout", function () {
 
-        // =========================
-        // LOAD GEOJSON
-        // =========================
+            if (!layer.isSelected) {
 
-        fetch("campus-only.geojson")
-
-            .then(response => response.json())
-
-            .then(data => {
-
-
-                L.geoJSON(data, {
-
-
-                    // =========================
-                    // BUILDING STYLE
-                    // =========================
-
-                    style: function(feature) {
-
-
-                        // College boundary
-
-                        if (
-
-                            feature.properties &&
-
-                            (
-
-                                feature.properties.name ===
-                                "St Joseph's Institute of Technology"
-
-                                ||
-
-                                feature.properties.name ===
-                                "St. Joseph's College of Engineering"
-
-                            )
-
-                        ) {
-
-
-                            return {
-
-                                color: "#123c69",
-
-                                weight: 3,
-
-                                fillOpacity: 0.04,
-
-                                interactive: false
-
-                            };
-
-                        }
-
-
-
-                        // Other buildings
-
-                        return {
-
-                            color: "#3b82f6",
-
-                            weight: 2,
-
-                            fillOpacity: 0.25
-
-                        };
-
-
-                    },
-
-
-
-                    // =========================
-                    // BUILDING POPUPS
-                    // =========================
-
-                    onEachFeature:
-                        function(feature, layer) {
-
-
-                            if (
-
-                                feature.properties &&
-
-                                feature.properties.name
-
-                            ) {
-
-
-                                let popupContent =
-
-                                    "<b>" +
-
-                                    feature.properties.name +
-
-                                    "</b>";
-
-
-
-                                // Building type
-
-                                if (
-                                    feature.properties.amenity
-                                ) {
-
-                                    popupContent +=
-
-                                        "<br>Type: " +
-
-                                        feature.properties.amenity;
-
-                                }
-
-
-
-                                // Established date
-
-                                if (
-                                    feature.properties.start_date
-                                ) {
-
-                                    popupContent +=
-
-                                        "<br>Established: " +
-
-                                        feature.properties.start_date;
-
-                                }
-
-
-
-                                // Add popup
-
-                                layer.bindPopup(
-                                    popupContent
-                                );
-
-
-                            }
-
-                        }
-
-
-                })
-
-                .addTo(map);
-
-
-            })
-
-
-            // =========================
-            // ERROR
-            // =========================
-
-            .catch(error => {
-
-                console.error(
-                    "Error loading campus map:",
-                    error
+                layer.setStyle(
+                    getBuildingStyle(feature)
                 );
 
-            });
-
-
-
-        // =========================
-        // LEGEND
-        // =========================
-
-        const legend = L.control({
-
-            position: "bottomright"
+            }
 
         });
 
 
+        /* --------------------------------------------------------
+           POPUP CLOSE
+        -------------------------------------------------------- */
 
-        legend.onAdd = function() {
+        layer.on("popupclose", function () {
 
+            layer.isSelected = false;
+
+            layer.setStyle(
+                getBuildingStyle(feature)
+            );
+
+        });
+
+    }
+
+
+    /* ============================================================
+       LOAD OSM GEOJSON
+    ============================================================ */
+
+    fetch("campus-only.geojson")
+
+        .then(function (response) {
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "GeoJSON file could not be loaded."
+                );
+
+            }
+
+            return response.json();
+
+        })
+
+
+        .then(function (data) {
+
+
+            /* ====================================================
+               CREATE CAMPUS BOUNDARY LAYER
+            ==================================================== */
+
+            const boundaryLayer = L.geoJSON(
+                data,
+                {
+
+                    filter: function (feature) {
+
+                        const name =
+                            feature.properties?.name || "";
+
+                        return (
+                            name ===
+                            "St Joseph's Institute of Technology" ||
+
+                            name ===
+                            "St. Joseph's College of Engineering"
+                        );
+
+                    },
+
+
+                    style: getBuildingStyle,
+
+
+                    /*
+                       IMPORTANT:
+                       Boundary is NOT interactive.
+                       Therefore it will NOT block building clicks.
+                    */
+
+                    interactive: false
+
+                }
+
+            ).addTo(map);
+
+
+            /* ====================================================
+               CREATE ACTUAL BUILDING LAYER
+            ==================================================== */
+
+            const buildingLayer = L.geoJSON(
+                data,
+                {
+
+                    filter: function (feature) {
+
+                        const properties =
+                            feature.properties || {};
+
+                        const name =
+                            properties.name || "";
+
+                        const building =
+                            properties.building || "";
+
+                        const amenity =
+                            properties.amenity || "";
+
+
+                        /*
+                           Don't duplicate college boundaries
+                        */
+
+                        if (
+                            name ===
+                            "St Joseph's Institute of Technology" ||
+
+                            name ===
+                            "St. Joseph's College of Engineering"
+                        ) {
+
+                            return false;
+
+                        }
+
+
+                        /*
+                           Keep actual buildings and
+                           meaningful named campus features
+                        */
+
+                        return (
+                            building !== "" ||
+                            name !== "" ||
+                            amenity !== ""
+                        );
+
+                    },
+
+
+                    style: getBuildingStyle,
+
+
+                    /* ------------------------------------------------
+                       MAKE ACTUAL OSM FOOTPRINT CLICKABLE
+                    ------------------------------------------------ */
+
+                    onEachFeature: function (
+                        feature,
+                        layer
+                    ) {
+
+                        allBuildingLayers.push({
+
+                            feature: feature,
+
+                            layer: layer
+
+                        });
+
+
+                        setupBuildingInteraction(
+                            feature,
+                            layer
+                        );
+
+                    }
+
+                }
+
+            ).addTo(map);
+
+
+            /* ====================================================
+               FIT MAP TO CAMPUS
+            ==================================================== */
+
+            const bounds =
+                boundaryLayer.getBounds();
+
+
+            if (bounds.isValid()) {
+
+                map.fitBounds(
+                    bounds,
+                    {
+                        padding: [
+                            30,
+                            30
+                        ]
+                    }
+                );
+
+            }
+
+        })
+
+
+        .catch(function (error) {
+
+            console.error(
+                "Error loading campus GeoJSON:",
+                error
+            );
+
+            alert(
+                "Unable to load the campus map data."
+            );
+
+        });
+
+
+    /* ============================================================
+       RELIGIOUS MARKER
+    ============================================================ */
+
+    function createReligiousMarker() {
+
+        return L.divIcon({
+
+            className: "",
+
+            html:
+                '<div class="religious-marker"></div>',
+
+            iconSize: [
+                15,
+                15
+            ],
+
+            iconAnchor: [
+                7,
+                7
+            ],
+
+            popupAnchor: [
+                0,
+                -7
+            ]
+
+        });
+
+    }
+
+
+    /* ============================================================
+       MANUAL CAMPUS DATA
+    ============================================================ */
+
+    if (
+        typeof campusData !==
+        "undefined"
+    ) {
+
+        campusData.forEach(
+            function (area) {
+
+                if (!area.locations) {
+                    return;
+                }
+
+
+                area.locations.forEach(
+                    function (location) {
+
+
+                        let popupContent = `
+
+                            <div>
+
+                                <div class="popup-title">
+                                    ${area.name}
+                                </div>
+
+                                <div class="popup-type">
+                                    ${location.name}
+                                </div>
+
+                        `;
+
+
+                        if (
+                            location.description
+                        ) {
+
+                            popupContent += `
+
+                                <div class="popup-info">
+                                    ${location.description}
+                                </div>
+
+                            `;
+
+                        }
+
+
+                        popupContent += `
+
+                            </div>
+
+                        `;
+
+
+                        const marker =
+                            L.marker(
+                                [
+                                    location.latitude,
+                                    location.longitude
+                                ],
+                                {
+                                    icon:
+                                        createReligiousMarker()
+                                }
+                            )
+                            .addTo(map);
+
+
+                        marker.bindPopup(
+                            popupContent
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+    }
+
+
+    /* ============================================================
+       LEGEND
+    ============================================================ */
+
+    const legend =
+        L.control({
+            position: "bottomright"
+        });
+
+
+    legend.onAdd =
+        function () {
 
             const div =
                 L.DomUtil.create(
@@ -687,11 +871,10 @@
                 );
 
 
-
             div.innerHTML = `
 
                 <div class="legend-title">
-                    Campus Locations
+                    Map Legend
                 </div>
 
 
@@ -701,7 +884,7 @@
                         class="legend-box academic">
                     </span>
 
-                    Academic
+                    Academic Building
 
                 </div>
 
@@ -720,10 +903,21 @@
                 <div class="legend-item">
 
                     <span
-                        class="legend-box dining">
+                        class="legend-box mess">
                     </span>
 
-                    Dining
+                    Mess
+
+                </div>
+
+
+                <div class="legend-item">
+
+                    <span
+                        class="legend-box campus">
+                    </span>
+
+                    Campus Boundary
 
                 </div>
 
@@ -734,7 +928,7 @@
                         class="legend-box religious">
                     </span>
 
-                    Religious
+                    Religious Place
 
                 </div>
 
@@ -746,12 +940,11 @@
         };
 
 
+    legend.addTo(map);
 
-        legend.addTo(map);
+</script>
 
-
-    </script>
-
+    
 
 </body>
 
