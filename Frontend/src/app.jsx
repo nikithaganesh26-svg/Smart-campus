@@ -3,7 +3,7 @@ import { useState } from "react";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import CampusMap from "./pages/CampusMap";
-import About from "./pages/About";
+import About from "./pages/about";
 import Login from "./pages/Login";
 import Rating from "./pages/Rating";
 
