@@ -1,176 +1,250 @@
 // ============================================================
-// SMART CAMPUS - REAL WALKING NAVIGATION
+// SMART CAMPUS - NAVIGATION MODULE
 // Member 3: Search + Navigation
 // ============================================================
 
-const { findLocation } = require("./search.js");
+const {
+    findLocation
+} = require("./search");
+
+
+// ============================================================
+// VALHALLA ROUTING SERVICE
+// ============================================================
 
 const VALHALLA_URL =
     "https://valhalla1.openstreetmap.de/route";
 
+
 // ============================================================
-// Get a real pedestrian route
+// DECODE VALHALLA POLYLINE
 // ============================================================
 
-async function getRoute(startName, destinationName) {
+function decodeValhallaPolyline(encoded) {
 
-    const start = findLocation(startName);
-    const destination = findLocation(destinationName);
+    let index = 0;
+    let latitude = 0;
+    let longitude = 0;
 
-    // Validate starting location
+    const coordinates = [];
+
+    while (index < encoded.length) {
+
+        let shift = 0;
+        let result = 0;
+        let byte;
+
+        do {
+            byte =
+                encoded.charCodeAt(index++) - 63;
+
+            result |=
+                (byte & 0x1f) << shift;
+
+            shift += 5;
+
+        } while (byte >= 0x20);
+
+        const latitudeChange =
+            (result & 1)
+                ? ~(result >> 1)
+                : result >> 1;
+
+        latitude += latitudeChange;
+
+
+        shift = 0;
+        result = 0;
+
+        do {
+            byte =
+                encoded.charCodeAt(index++) - 63;
+
+            result |=
+                (byte & 0x1f) << shift;
+
+            shift += 5;
+
+        } while (byte >= 0x20);
+
+        const longitudeChange =
+            (result & 1)
+                ? ~(result >> 1)
+                : result >> 1;
+
+        longitude += longitudeChange;
+
+
+        coordinates.push([
+            longitude / 1e6,
+            latitude / 1e6
+        ]);
+    }
+
+    return coordinates;
+}
+
+
+// ============================================================
+// GET ROUTE USING LOCATION NAMES
+// ============================================================
+
+async function getRoute(
+    startName,
+    destinationName
+) {
+
+    const start =
+        findLocation(startName);
+
+    const destination =
+        findLocation(destinationName);
+
+
+    // --------------------------------------------------------
+    // VALIDATE START
+    // --------------------------------------------------------
+
     if (!start) {
+
         return {
             success: false,
-            message: `Starting location "${startName}" was not found.`
+            message:
+                `Starting location "${startName}" was not found.`
         };
     }
 
-    // Validate destination
+
+    // --------------------------------------------------------
+    // VALIDATE DESTINATION
+    // --------------------------------------------------------
+
     if (!destination) {
+
         return {
             success: false,
-            message: `Destination "${destinationName}" was not found.`
+            message:
+                `Destination "${destinationName}" was not found.`
         };
     }
 
-    // Prevent navigation to the same location
+
+    // --------------------------------------------------------
+    // SAME LOCATION CHECK
+    // --------------------------------------------------------
+
     if (
         start.latitude === destination.latitude &&
         start.longitude === destination.longitude
     ) {
+
         return {
             success: false,
-            message: "Starting point and destination are the same."
+            message:
+                "Starting location and destination are the same."
         };
     }
 
-    // ========================================================
-    // Valhalla pedestrian routing request
-    // ========================================================
-
-    const requestBody = {
-        locations: [
-            {
-                lat: start.latitude,
-                lon: start.longitude,
-                type: "break"
-            },
-            {
-                lat: destination.latitude,
-                lon: destination.longitude,
-                type: "break"
-            }
-        ],
-
-        costing: "pedestrian",
-
-        units: "kilometers",
-
-        directions_options: {
-            units: "kilometers"
-        }
-    };
 
     try {
 
-        const response = await fetch(
-            VALHALLA_URL,
-            {
-                method: "POST",
+        // ----------------------------------------------------
+        // SEND REQUEST TO VALHALLA
+        // ----------------------------------------------------
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+        const response =
+            await fetch(
+                VALHALLA_URL,
+                {
+                    method: "POST",
 
-                body: JSON.stringify(requestBody)
-            }
-        );
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-        // ====================================================
-        // Check routing server response
-        // ====================================================
+                    body: JSON.stringify({
+
+                        locations: [
+
+                            {
+                                lat: start.latitude,
+                                lon: start.longitude,
+                                type: "break"
+                            },
+
+                            {
+                                lat: destination.latitude,
+                                lon: destination.longitude,
+                                type: "break"
+                            }
+
+                        ],
+
+                        costing: "pedestrian",
+
+                        units: "kilometers",
+
+                        directions_options: {
+                            units: "kilometers"
+                        }
+
+                    })
+                }
+            );
+
+
+        // ----------------------------------------------------
+        // CHECK RESPONSE
+        // ----------------------------------------------------
 
         if (!response.ok) {
+
             throw new Error(
-                `Routing server returned ${response.status}`
+                `Valhalla request failed with status ${response.status}`
             );
         }
 
-        const data = await response.json();
 
-        // ====================================================
-        // Check whether route exists
-        // ====================================================
+        const data =
+            await response.json();
+
+
+        // ----------------------------------------------------
+        // CHECK ROUTE
+        // ----------------------------------------------------
 
         if (
             !data.trip ||
             !data.trip.legs ||
             data.trip.legs.length === 0
         ) {
+
             return {
                 success: false,
-                message: "No walking route was found."
+                message:
+                    "No walking route was found."
             };
         }
 
-        const leg = data.trip.legs[0];
 
-        // ====================================================
-        // Decode route geometry
-        // ====================================================
+        const leg =
+            data.trip.legs[0];
+
+
+        // ----------------------------------------------------
+        // DECODE ROUTE
+        // ----------------------------------------------------
 
         const routeCoordinates =
-            decodePolyline(leg.shape);
-
-        // ====================================================
-        // Distance
-        // ====================================================
-
-        const distanceKm =
-            Number(
-                leg.summary.length.toFixed(2)
+            decodeValhallaPolyline(
+                leg.shape
             );
 
-        const distanceMeters =
-            Math.round(distanceKm * 1000);
 
-        // ====================================================
-        // Walking duration
-        // ====================================================
-
-        const durationMinutes =
-            Math.max(
-                1,
-                Math.ceil(leg.summary.time / 60)
-            );
-
-        // ====================================================
-        // Turn-by-turn instructions
-        // ====================================================
-
-        const instructions =
-            (leg.maneuvers || []).map(
-                function (maneuver) {
-
-                    return {
-                        instruction:
-                            maneuver.instruction || "",
-
-                        type:
-                            maneuver.type || null,
-
-                        length:
-                            maneuver.length || 0,
-
-                        time:
-                            maneuver.time || 0
-                    };
-                }
-            );
-
-        // ====================================================
-        // Return complete navigation result
-        // ====================================================
+        // ----------------------------------------------------
+        // RETURN ROUTE INFORMATION
+        // ----------------------------------------------------
 
         return {
 
@@ -189,20 +263,47 @@ async function getRoute(startName, destinationName) {
             },
 
             distance: {
-                kilometers: distanceKm,
-                meters: distanceMeters
+
+                kilometers:
+                    Number(
+                        data.trip.summary.length.toFixed(2)
+                    ),
+
+                meters:
+                    Math.round(
+                        data.trip.summary.length * 1000
+                    )
             },
 
             duration: {
-                minutes: durationMinutes
+
+                minutes:
+                    Math.ceil(
+                        data.trip.summary.time / 60
+                    )
             },
 
-            // Valhalla format:
-            // [longitude, latitude]
             routeCoordinates,
 
-            // Turn-by-turn navigation
-            instructions
+            instructions:
+                leg.maneuvers?.map(
+                    (maneuver) => ({
+
+                        instruction:
+                            maneuver.instruction,
+
+                        type:
+                            maneuver.type,
+
+                        length:
+                            maneuver.length,
+
+                        time:
+                            maneuver.time
+
+                    })
+                ) || []
+
         };
 
     } catch (error) {
@@ -213,190 +314,392 @@ async function getRoute(startName, destinationName) {
         );
 
         return {
+
             success: false,
+
             message:
                 "Unable to calculate the walking route."
+
         };
     }
 }
 
 
 // ============================================================
-// Decode Valhalla encoded polyline
+// GET ROUTE USING GPS COORDINATES
 // ============================================================
 
-function decodePolyline(encoded) {
+async function getRouteByCoordinates(
+    startLatitude,
+    startLongitude,
+    destinationName
+) {
 
-    let index = 0;
+    // --------------------------------------------------------
+    // FIND DESTINATION
+    // --------------------------------------------------------
 
-    let latitude = 0;
-    let longitude = 0;
+    const destination =
+        findLocation(destinationName);
 
-    const coordinates = [];
 
-    while (index < encoded.length) {
+    // --------------------------------------------------------
+    // VALIDATE DESTINATION
+    // --------------------------------------------------------
 
-        // ----------------------------------------------------
-        // Decode latitude
-        // ----------------------------------------------------
+    if (!destination) {
 
-        let result = 0;
-        let shift = 0;
-        let byte;
+        return {
 
-        do {
+            success: false,
 
-            byte =
-                encoded.charCodeAt(index++) - 63;
+            message:
+                `Destination "${destinationName}" was not found.`
 
-            result |=
-                (byte & 0x1f) << shift;
-
-            shift += 5;
-
-        } while (byte >= 0x20);
-
-        const deltaLatitude =
-            (result & 1)
-                ? ~(result >> 1)
-                : result >> 1;
-
-        latitude += deltaLatitude;
-
-        // ----------------------------------------------------
-        // Decode longitude
-        // ----------------------------------------------------
-
-        result = 0;
-        shift = 0;
-
-        do {
-
-            byte =
-                encoded.charCodeAt(index++) - 63;
-
-            result |=
-                (byte & 0x1f) << shift;
-
-            shift += 5;
-
-        } while (byte >= 0x20);
-
-        const deltaLongitude =
-            (result & 1)
-                ? ~(result >> 1)
-                : result >> 1;
-
-        longitude += deltaLongitude;
-
-        // ----------------------------------------------------
-        // Convert to decimal coordinates
-        // ----------------------------------------------------
-
-        const lat =
-            latitude / 1e6;
-
-        const lon =
-            longitude / 1e6;
-
-        // Valhalla gives longitude first
-        coordinates.push([
-            lon,
-            lat
-        ]);
+        };
     }
 
-    return coordinates;
+
+    // --------------------------------------------------------
+    // VALIDATE GPS COORDINATES
+    // --------------------------------------------------------
+
+    if (
+        typeof startLatitude !== "number" ||
+        typeof startLongitude !== "number" ||
+        !Number.isFinite(startLatitude) ||
+        !Number.isFinite(startLongitude)
+    ) {
+
+        return {
+
+            success: false,
+
+            message:
+                "Invalid starting coordinates."
+
+        };
+    }
+
+
+    // --------------------------------------------------------
+    // SAME LOCATION CHECK
+    // --------------------------------------------------------
+
+    if (
+        startLatitude === destination.latitude &&
+        startLongitude === destination.longitude
+    ) {
+
+        return {
+
+            success: false,
+
+            message:
+                "Starting location and destination are the same."
+
+        };
+    }
+
+
+    try {
+
+        // ----------------------------------------------------
+        // SEND GPS + DESTINATION TO VALHALLA
+        // ----------------------------------------------------
+
+        const response =
+            await fetch(
+                VALHALLA_URL,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        locations: [
+
+                            {
+                                lat: startLatitude,
+                                lon: startLongitude,
+                                type: "break"
+                            },
+
+                            {
+                                lat: destination.latitude,
+                                lon: destination.longitude,
+                                type: "break"
+                            }
+
+                        ],
+
+                        costing: "pedestrian",
+
+                        units: "kilometers",
+
+                        directions_options: {
+                            units: "kilometers"
+                        }
+
+                    })
+                }
+            );
+
+
+        // ----------------------------------------------------
+        // CHECK RESPONSE
+        // ----------------------------------------------------
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Valhalla request failed with status ${response.status}`
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        // ----------------------------------------------------
+        // CHECK ROUTE
+        // ----------------------------------------------------
+
+        if (
+            !data.trip ||
+            !data.trip.legs ||
+            data.trip.legs.length === 0
+        ) {
+
+            return {
+
+                success: false,
+
+                message:
+                    "No walking route was found."
+
+            };
+        }
+
+
+        const leg =
+            data.trip.legs[0];
+
+
+        // ----------------------------------------------------
+        // DECODE ROUTE
+        // ----------------------------------------------------
+
+        const routeCoordinates =
+            decodeValhallaPolyline(
+                leg.shape
+            );
+
+
+        // ----------------------------------------------------
+        // RETURN ROUTE INFORMATION
+        // ----------------------------------------------------
+
+        return {
+
+            success: true,
+
+            start: {
+
+                latitude:
+                    startLatitude,
+
+                longitude:
+                    startLongitude
+
+            },
+
+            destination: {
+
+                name:
+                    destination.name,
+
+                latitude:
+                    destination.latitude,
+
+                longitude:
+                    destination.longitude
+
+            },
+
+            distance: {
+
+                kilometers:
+                    Number(
+                        data.trip.summary.length.toFixed(2)
+                    ),
+
+                meters:
+                    Math.round(
+                        data.trip.summary.length * 1000
+                    )
+
+            },
+
+            duration: {
+
+                minutes:
+                    Math.ceil(
+                        data.trip.summary.time / 60
+                    )
+
+            },
+
+            routeCoordinates,
+
+            instructions:
+                leg.maneuvers?.map(
+                    (maneuver) => ({
+
+                        instruction:
+                            maneuver.instruction,
+
+                        type:
+                            maneuver.type,
+
+                        length:
+                            maneuver.length,
+
+                        time:
+                            maneuver.time
+
+                    })
+                ) || []
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "Coordinate routing error:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to calculate the walking route."
+
+        };
+    }
 }
 
 
 // ============================================================
-// Create readable navigation summary
+// NAVIGATION SUMMARY
 // ============================================================
 
 function getNavigationSummary(route) {
 
-    if (!route || !route.success) {
+    if (
+        !route ||
+        !route.success
+    ) {
 
-        return (
-            route?.message ||
-            "Navigation unavailable."
-        );
+        return null;
     }
 
-    return (
-        `From ${route.start.name} ` +
-        `to ${route.destination.name}. ` +
-        `Distance: ${route.distance.kilometers} km. ` +
-        `Walking time: approximately ` +
-        `${route.duration.minutes} minutes.`
-    );
+
+    return {
+
+        from:
+            route.start.name ||
+            "Current location",
+
+        to:
+            route.destination.name,
+
+        distance:
+            route.distance.kilometers,
+
+        duration:
+            route.duration.minutes
+
+    };
 }
 
 
 // ============================================================
-// Convert coordinates for Leaflet
+// CONVERT ROUTE TO LEAFLET COORDINATES
 // ============================================================
 //
-// Valhalla:
+// Valhalla gives:
+//
 // [longitude, latitude]
 //
-// Leaflet:
+// Leaflet needs:
+//
 // [latitude, longitude]
 //
-// This does NOT create a new map.
-// It only prepares coordinates for the existing map.
-//
+// ============================================================
 
-function getLeafletCoordinates(route) {
+function getLeafletCoordinates(
+    route
+) {
 
     if (
         !route ||
-        !route.success ||
         !route.routeCoordinates
     ) {
+
         return [];
     }
 
-    return route.routeCoordinates.map(
-        function ([longitude, latitude]) {
 
-            return [
-                latitude,
-                longitude
-            ];
-        }
+    return route.routeCoordinates.map(
+        (coordinate) => [
+
+            coordinate[1],
+            coordinate[0]
+
+        ]
     );
 }
 
 
 // ============================================================
-// Get clean navigation data for frontend/map integration
+// GET COMPLETE NAVIGATION DATA
 // ============================================================
 
 function getNavigationData(route) {
 
-    if (!route || !route.success) {
+    if (
+        !route ||
+        !route.success
+    ) {
 
-        return {
-            success: false,
-            message:
-                route?.message ||
-                "Navigation unavailable."
-        };
+        return null;
     }
+
 
     return {
 
-        success: true,
+        success:
+            route.success,
 
-        start: route.start,
+        start:
+            route.start,
 
-        destination: route.destination,
+        destination:
+            route.destination,
 
-        distance: route.distance,
+        distance:
+            route.distance,
 
-        duration: route.duration,
+        duration:
+            route.duration,
 
         routeCoordinates:
             route.routeCoordinates,
@@ -405,18 +708,21 @@ function getNavigationData(route) {
             getLeafletCoordinates(route),
 
         instructions:
-            route.instructions || []
+            route.instructions
+
     };
 }
 
 
 // ============================================================
-// Export navigation functions
+// EXPORTS
 // ============================================================
 
 module.exports = {
 
     getRoute,
+
+    getRouteByCoordinates,
 
     getNavigationSummary,
 
