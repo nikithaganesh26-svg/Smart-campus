@@ -1,0 +1,53 @@
+
+.hero {
+  min-height: calc(100vh - 75px);
+  display: flex;
+  align-items: center;
+  padding: 60px 80px;
+  background: linear-gradient(135deg, #eef5ff, #ffffff);
+}
+
+.hero-content {
+  max-width: 700px;
+}
+
+.small-title {
+  color: #123c69;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  margin-bottom: 15px;
+}
+
+.hero h1 {
+  font-size: 52px;
+  line-height: 1.15;
+  color: #123c69;
+  margin-bottom: 25px;
+}
+
+.description {
+  font-size: 18px;
+  line-height: 1.7;
+  color: #555;
+  max-width: 600px;
+  margin-bottom: 30px;
+}
+
+.map-button {
+  display: inline-block;
+  text-decoration: none;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 8px;
+  background: #123c69;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+  
+
+.map-button:hover {
+  background: #0b2948;
+}
