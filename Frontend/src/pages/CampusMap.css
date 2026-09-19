@@ -1717,3 +1717,46 @@
   + .building-label {
   border-color: #93c5fd !important;
 }
+/* =============================
+   NAVIGATION PANEL
+   ============================= */
+
+.navigation-panel {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: white;
+  padding: 16px;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 320px;
+}
+
+.navigation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.voice-toggle {
+  border: none;
+  background: #f1f5f9;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.navigation-instruction {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.navigation-distance {
+  font-size: 14px;
+  color: #555;
+}

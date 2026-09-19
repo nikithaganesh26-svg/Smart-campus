@@ -37,22 +37,90 @@ function App() {
 
 
   // =========================
-  // LOGOUT
+  // LOGOUT / CHECK-OUT
   // =========================
 
-  function handleLogout() {
+  async function handleLogout() {
 
-    localStorage.removeItem("smartCampusUser");
+    // Get logged-in visitor
+    const savedUser = localStorage.getItem("smartCampusUser");
 
-    setIsLoggedIn(false);
+    if (!savedUser) {
+      setIsLoggedIn(false);
+      setShowRating(true);
+      return;
+    }
 
-    setShowRating(true);
+    const user = JSON.parse(savedUser);
 
-    window.history.pushState(
-      {},
-      "",
-      "/rating"
-    );
+    try {
+
+      // Send checkout request to backend
+      const response = await fetch(
+        "http://localhost:5000/api/visitors/check-out",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            visitorId: user._id
+          })
+        }
+      );
+
+
+      const result = await response.json();
+
+
+      // Check backend response
+      if (!response.ok || !result.success) {
+
+        alert(
+          result.message ||
+          "Unable to check out visitor."
+        );
+
+        return;
+      }
+
+
+      // Check-out successful
+      console.log(
+        "Visitor checked out successfully:",
+        result.visitor
+      );
+
+
+      // Remove logged-in visitor
+      localStorage.removeItem("smartCampusUser");
+
+      setIsLoggedIn(false);
+
+      setShowRating(true);
+
+      window.history.pushState(
+        {},
+        "",
+        "/rating"
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Check-out error:",
+        error
+      );
+
+      alert(
+        "Unable to connect to the server. Please make sure the backend is running."
+      );
+
+    }
+
   }
 
 
@@ -61,7 +129,9 @@ function App() {
   // =========================
 
   if (showRating) {
+
     return <Rating />;
+
   }
 
 

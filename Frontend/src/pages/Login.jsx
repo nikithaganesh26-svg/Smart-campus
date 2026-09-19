@@ -2,7 +2,6 @@ import { useState } from "react";
 import "./Login.css";
 
 function Login({ onLoginSuccess }) {
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -11,15 +10,13 @@ function Login({ onLoginSuccess }) {
   });
 
   const [userType, setUserType] = useState("");
-
   const [errors, setErrors] = useState({});
-
   const [loading, setLoading] = useState(false);
 
-
+  // ==============================
   // NAME VALIDATION
+  // ==============================
   function validateName(value) {
-
     if (value.trim() === "") {
       return "Name is required";
     }
@@ -31,10 +28,10 @@ function Login({ onLoginSuccess }) {
     return "";
   }
 
-
+  // ==============================
   // EMAIL VALIDATION
+  // ==============================
   function validateEmail(value) {
-
     if (value.trim() === "") {
       return "Email is required";
     }
@@ -46,10 +43,10 @@ function Login({ onLoginSuccess }) {
     return "";
   }
 
-
+  // ==============================
   // PHONE VALIDATION
+  // ==============================
   function validatePhone(value) {
-
     if (value.trim() === "") {
       return "Phone number is required";
     }
@@ -61,10 +58,10 @@ function Login({ onLoginSuccess }) {
     return "";
   }
 
-
+  // ==============================
   // OTHER ROLE VALIDATION
+  // ==============================
   function validateOtherRole(value) {
-
     if (value.trim() === "") {
       return "Please specify who you are";
     }
@@ -76,10 +73,10 @@ function Login({ onLoginSuccess }) {
     return "";
   }
 
-
+  // ==============================
   // INPUT CHANGE
+  // ==============================
   function handleChange(event) {
-
     const name = event.target.name;
     const value = event.target.value;
 
@@ -112,10 +109,10 @@ function Login({ onLoginSuccess }) {
     });
   }
 
-
+  // ==============================
   // USER TYPE CHANGE
+  // ==============================
   function handleUserTypeChange(event) {
-
     const value = event.target.value;
 
     setUserType(value);
@@ -127,148 +124,154 @@ function Login({ onLoginSuccess }) {
     });
 
     if (value !== "Other") {
-
       setFormData({
         ...formData,
         otherRole: ""
       });
-
     }
   }
 
-
+  // ==============================
   // FORM VALIDATION
+  // ==============================
   function validateForm() {
-
     const newErrors = {};
 
-
-    const nameError =
-      validateName(formData.name);
+    const nameError = validateName(formData.name);
 
     if (nameError) {
       newErrors.name = nameError;
     }
 
-
-    const emailError =
-      validateEmail(formData.email);
+    const emailError = validateEmail(formData.email);
 
     if (emailError) {
       newErrors.email = emailError;
     }
 
-
-    const phoneError =
-      validatePhone(formData.phone);
+    const phoneError = validatePhone(formData.phone);
 
     if (phoneError) {
       newErrors.phone = phoneError;
     }
 
-
     if (userType === "") {
-
-      newErrors.userType =
-        "Please select who you are";
-
+      newErrors.userType = "Please select who you are";
     }
 
-
     if (userType === "Other") {
-
-      const otherError =
-        validateOtherRole(formData.otherRole);
+      const otherError = validateOtherRole(formData.otherRole);
 
       if (otherError) {
         newErrors.otherRole = otherError;
       }
-
     }
-
 
     setErrors(newErrors);
 
     return Object.keys(newErrors).length === 0;
   }
 
-
-  // FRONTEND-ONLY LOGIN
-  function handleLogin(event) {
-
+  // ==============================
+  // LOGIN + BACKEND CHECK-IN
+  // ==============================
+  async function handleLogin(event) {
     event.preventDefault();
 
-
     const isValid = validateForm();
-
 
     if (!isValid) {
       return;
     }
 
-
     setLoading(true);
 
-
-    // Read QR scan ID
-    const params =
-      new URLSearchParams(
+    try {
+      // Read QR scan ID
+      const params = new URLSearchParams(
         window.location.search
       );
 
+      const scanId =
+        params.get("scanId") || "MAIN_GATE";
 
-    const scanId =
-      params.get("scanId") ||
-      "MAIN_GATE";
+      // Visitor information
+      const visitorData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
 
+        visitorType:
+          userType === "Other"
+            ? formData.otherRole
+            : userType,
 
-    // Visitor information
-    const visitorData = {
+        scanId: scanId
+      };
 
-      name: formData.name,
+      // ==============================
+      // SEND DATA TO BACKEND
+      // ==============================
+      const response = await fetch(
+        "http://localhost:5000/api/visitors/check-in",
+        {
+          method: "POST",
 
-      email: formData.email,
+          headers: {
+            "Content-Type": "application/json"
+          },
 
-      phone: formData.phone,
+          body: JSON.stringify(visitorData)
+        }
+      );
 
-      userType:
-        userType === "Other"
-          ? formData.otherRole
-          : userType,
+      const result = await response.json();
 
-      scanId: scanId,
+      // ==============================
+      // CHECK BACKEND RESPONSE
+      // ==============================
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "Unable to save visitor"
+        );
+      }
 
-      loginTime:
-        new Date().toISOString(),
+      // ==============================
+      // SAVE DATABASE RECORD LOCALLY
+      // ==============================
+      const savedVisitor = result.visitor;
 
-      status: "Logged In"
+      localStorage.setItem(
+        "smartCampusUser",
+        JSON.stringify(savedVisitor)
+      );
 
-    };
+      // ==============================
+      // INFORM APP.JSX
+      // ==============================
+      onLoginSuccess(savedVisitor);
 
+    } catch (error) {
+      console.error("Login error:", error);
 
-    // Save only in browser
-    localStorage.setItem(
-      "smartCampusUser",
-      JSON.stringify(visitorData)
-    );
+      alert(
+        error.message ||
+        "Unable to connect to the server. Please try again."
+      );
 
-
-    // Tell App.jsx that login was successful
-    onLoginSuccess(visitorData);
-
-
-    setLoading(false);
+    } finally {
+      setLoading(false);
+    }
   }
 
-
   return (
-
     <div className="login-page">
 
       <div className="login-card">
 
-
-        {/* LEFT SIDE */}
+        {/* ==============================
+            LEFT SIDE
+        ============================== */}
 
         <div className="login-info">
 
@@ -279,17 +282,12 @@ function Login({ onLoginSuccess }) {
             </div>
 
             <div>
-
               <h2>
                 St. Joseph's Group of Institutions
               </h2>
-
-              
-
             </div>
 
           </div>
-
 
           <div className="info-content">
 
@@ -298,58 +296,33 @@ function Login({ onLoginSuccess }) {
             </p>
 
             <h1>
-
               Explore Our
-
               <br />
-
               Campus
-
             </h1>
 
-
             <p className="info-text">
-
               Discover buildings, departments,
               laboratories and important campus
               facilities through our interactive
               smart campus map.
-
             </p>
-
 
             <div className="features">
 
               <div>
-
-                <span>
-                  01
-                </span>
-
+                <span>01</span>
                 Interactive Campus Map
-
               </div>
 
-
               <div>
-
-                <span>
-                  02
-                </span>
-
+                <span>02</span>
                 Search Campus Locations
-
               </div>
 
-
               <div>
-
-                <span>
-                  03
-                </span>
-
+                <span>03</span>
                 Easy Navigation
-
               </div>
 
             </div>
@@ -358,11 +331,11 @@ function Login({ onLoginSuccess }) {
 
         </div>
 
-
-        {/* RIGHT SIDE LOGIN FORM */}
+        {/* ==============================
+            RIGHT SIDE LOGIN FORM
+        ============================== */}
 
         <div className="login-form">
-
 
           <div className="form-heading">
 
@@ -380,9 +353,7 @@ function Login({ onLoginSuccess }) {
 
           </div>
 
-
           <form onSubmit={handleLogin}>
-
 
             {/* NAME */}
 
@@ -392,32 +363,21 @@ function Login({ onLoginSuccess }) {
                 Full Name
               </label>
 
-
               <input
-
                 type="text"
-
                 name="name"
-
                 placeholder="Enter your full name"
-
                 value={formData.name}
-
                 onChange={handleChange}
-
               />
 
-
               {errors.name && (
-
                 <small className="error">
                   {errors.name}
                 </small>
-
               )}
 
             </div>
-
 
             {/* USER TYPE */}
 
@@ -427,49 +387,38 @@ function Login({ onLoginSuccess }) {
                 Who are you?
               </label>
 
-
               <select
-
                 value={userType}
-
                 onChange={handleUserTypeChange}
-
               >
 
                 <option value="">
                   Select your role
                 </option>
 
-
                 <option value="Student">
                   Student
                 </option>
-
 
                 <option value="Parent">
                   Parent
                 </option>
 
-
                 <option value="Faculty">
                   Faculty
                 </option>
-
 
                 <option value="Vendor">
                   Vendor
                 </option>
 
-
                 <option value="Alumni">
                   Alumni
                 </option>
 
-
                 <option value="Recruiter / Company">
                   Recruiter / Company
                 </option>
-
 
                 <option value="Other">
                   Other
@@ -477,17 +426,13 @@ function Login({ onLoginSuccess }) {
 
               </select>
 
-
               {errors.userType && (
-
                 <small className="error">
                   {errors.userType}
                 </small>
-
               )}
 
             </div>
-
 
             {/* OTHER ROLE */}
 
@@ -499,34 +444,23 @@ function Login({ onLoginSuccess }) {
                   Please specify
                 </label>
 
-
                 <input
-
                   type="text"
-
                   name="otherRole"
-
                   placeholder="Enter who you are"
-
                   value={formData.otherRole}
-
                   onChange={handleChange}
-
                 />
 
-
                 {errors.otherRole && (
-
                   <small className="error">
                     {errors.otherRole}
                   </small>
-
                 )}
 
               </div>
 
             )}
-
 
             {/* EMAIL */}
 
@@ -536,32 +470,21 @@ function Login({ onLoginSuccess }) {
                 Email Address
               </label>
 
-
               <input
-
                 type="email"
-
                 name="email"
-
                 placeholder="example@gmail.com"
-
                 value={formData.email}
-
                 onChange={handleChange}
-
               />
 
-
               {errors.email && (
-
                 <small className="error">
                   {errors.email}
                 </small>
-
               )}
 
             </div>
-
 
             {/* PHONE */}
 
@@ -571,45 +494,29 @@ function Login({ onLoginSuccess }) {
                 Phone Number
               </label>
 
-
               <input
-
                 type="tel"
-
                 name="phone"
-
                 placeholder="Enter 10 digit phone number"
-
                 value={formData.phone}
-
                 onChange={handleChange}
-
                 maxLength="10"
-
               />
 
-
               {errors.phone && (
-
                 <small className="error">
                   {errors.phone}
                 </small>
-
               )}
 
             </div>
 
-
             {/* LOGIN BUTTON */}
 
             <button
-
               type="submit"
-
               className="login-button"
-
               disabled={loading}
-
             >
 
               {loading
@@ -617,40 +524,26 @@ function Login({ onLoginSuccess }) {
                 : "Login"
               }
 
-
               {!loading && (
-
                 <span>
                   →
                 </span>
-
               )}
 
             </button>
 
-
           </form>
 
-
           <p className="login-footer">
-
             Smart Campus • St. Joseph's Group of Institutions
-
           </p>
-
 
         </div>
 
       </div>
 
     </div>
-
   );
-
 }
-
-
-// IMPORTANT
-// This fixes the "does not provide an export named default" error.
 
 export default Login;

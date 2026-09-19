@@ -355,6 +355,40 @@ function MapController({
   return null;
 }
 
+// =============================
+// FOLLOW USER LOCATION
+// =============================
+
+function UserLocationController({
+  userLocation,
+  navigationActive,
+  navigationRoute,
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (
+      navigationActive &&
+      navigationRoute &&
+      navigationRoute.length > 0
+    ) {
+      const routeForLeaflet = navigationRoute.map((point) => [
+        Number(point[1]),
+        Number(point[0]),
+      ]);
+
+      const bounds = L.latLngBounds(routeForLeaflet);
+
+      map.fitBounds(bounds, {
+        padding: [50, 50],
+        maxZoom: 17,
+        animate: true,
+      });
+    }
+  }, [navigationActive, navigationRoute, map]);
+
+  return null;
+}
 
 /* ============================= */
 /* MAIN COMPONENT */
@@ -373,6 +407,36 @@ function CampusMap() {
 
   const [selectedCategory, setSelectedCategory] =
     useState("All");
+
+    // =============================
+// NAVIGATION STATES
+// =============================
+
+const [navigationActive, setNavigationActive] = useState(false);
+
+const [navigationInstruction, setNavigationInstruction] =
+  useState("");
+
+const [navigationDistance, setNavigationDistance] =
+  useState(0);
+
+const [navigationRoute, setNavigationRoute] =
+  useState([]);
+
+const [navigationSteps, setNavigationSteps] =
+  useState([]);
+
+const [currentStepIndex, setCurrentStepIndex] =
+  useState(0);
+
+const [gpsWatchId, setGpsWatchId] =
+  useState(null);
+
+const [lastSpokenInstruction, setLastSpokenInstruction] =
+  useState("");
+
+const [voiceEnabled, setVoiceEnabled] =
+  useState(true);
 
  const params = new URLSearchParams(window.location.search);
 
@@ -744,41 +808,305 @@ const [campus, setCampus] = useState(
     );
 
   };
+  
+  // =============================
+// VOICE GUIDANCE
+// =============================
 
+const speakNavigationInstruction = (text) => {
+  if (!voiceEnabled) return;
+
+  if (!("speechSynthesis" in window)) {
+    console.log("Voice guidance is not supported in this browser.");
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+
+  const speech = new SpeechSynthesisUtterance(text);
+
+  speech.rate = 1;
+  speech.pitch = 1;
+  speech.volume = 1;
+
+  window.speechSynthesis.speak(speech);
+};
+
+// =============================
+// UPDATE NAVIGATION PROGRESS
+// =============================
+// =============================
+// UPDATE NAVIGATION PROGRESS
+// =============================
+
+const updateNavigationProgress = (latitude, longitude) => {
+  // Check whether the visitor reached the destination
+if (selectedLocation) {
+  const distanceToDestination = calculateDistance(
+    latitude,
+    longitude,
+    selectedLocation.latitude,
+    selectedLocation.longitude
+  );
+
+  if (distanceToDestination <= 0.02) {
+    alert("🎉 You have reached your destination!");
+
+    stopNavigation();
+    setShowRoute(false);
+
+    return;
+  }
+}
+  if (!navigationActive || navigationSteps.length === 0) {
+    return;
+  }
+
+  const currentStep = navigationSteps[currentStepIndex];
+
+  if (!currentStep) {
+    return;
+  }
+
+  const instruction =
+    currentStep.instruction ||
+    currentStep.text ||
+    currentStep;
+
+  // Show the current instruction
+  setNavigationInstruction(instruction);
+
+  // Speak the instruction only once
+  if (instruction !== lastSpokenInstruction) {
+    speakNavigationInstruction(instruction);
+    setLastSpokenInstruction(instruction);
+  }
+
+  /*
+    The backend instructions do not currently provide
+    exact GPS coordinates for every instruction.
+
+    Therefore, keep the current instruction until
+    the next navigation update.
+  */
+
+  if (currentStepIndex < navigationSteps.length - 1) {
+    const nextIndex = currentStepIndex + 1;
+
+    // Advance gradually instead of changing everything at once
+    setTimeout(() => {
+      setCurrentStepIndex((previousIndex) => {
+        if (previousIndex === currentStepIndex) {
+          return nextIndex;
+        }
+
+        return previousIndex;
+      });
+    }, 5000);
+  }
+};
+
+// =============================
+// START LIVE GPS NAVIGATION
+// =============================
+
+const startNavigation = () => {
+  if (!navigator.geolocation) {
+    setLocationError(
+      "GPS is not supported by this browser."
+    );
+    return;
+  }
+
+  setNavigationActive(true);
+  setLocationError("");
+
+  const watchId = navigator.geolocation.watchPosition(
+    (position) => {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+
+      setUserLocation({
+        latitude,
+        longitude,
+      });
+
+      updateNavigationProgress(latitude, longitude);
+    },
+    (error) => {
+      console.error("GPS navigation error:", error);
+
+      setLocationError(
+        "Unable to track your location. Please allow GPS access."
+      );
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 2000,
+      timeout: 10000,
+    }
+  );
+
+  setGpsWatchId(watchId);
+};
+
+// =============================
+// STOP LIVE GPS NAVIGATION
+// =============================
+
+const stopNavigation = () => {
+  if (gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(gpsWatchId);
+  }
+
+  setGpsWatchId(null);
+  setNavigationActive(false);
+  setNavigationInstruction("");
+  setNavigationSteps([]);
+  setCurrentStepIndex(0);
+  setLastSpokenInstruction("");
+
+  window.speechSynthesis.cancel();
+};
 
   /* ============================= */
   /* SHOW ROUTE */
   /* ============================= */
 
-  const handleShowRoute = () => {
+  // =============================
+// GET PEDESTRIAN ROUTE
+// =============================
 
-    if (!userLocation) {
+const handleShowRoute = async () => {
+  if (!selectedLocation) {
+    setLocationError("Please select a building first.");
+    return;
+  }
 
-      setLocationError(
-        "First click Find Nearest to get your current location."
-      );
+  setLocationError("");
+  setLocationLoading(true);
 
-      return;
+  try {
+    let currentLocation = userLocation;
 
+    // If GPS location is not available, request it automatically
+    if (!currentLocation) {
+      currentLocation = await new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(new Error("Geolocation is not supported by this browser."));
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            resolve({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+          },
+          (error) => {
+            reject(error);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+          }
+        );
+      });
+
+      setUserLocation(currentLocation);
     }
 
+    // Send current GPS location to backend
+    const response = await fetch(
+      "http://localhost:5000/api/navigation/route-from-location",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+          destinationName: selectedLocation.name,
+        }),
+      }
+    );
 
-    if (!selectedLocation) {
+    const result = await response.json();
 
-      setLocationError(
-        "Please select a building first."
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.message || "Unable to calculate pedestrian route."
       );
-
-      return;
-
     }
 
+    console.log("Navigation route:", result.route);
 
-    setLocationError("");
+    // Save route coordinates
+    const coordinates = result.route.routeCoordinates || [];
 
+console.log("Route coordinates:", coordinates);
+
+if (coordinates.length > 0) {
+  setNavigationRoute(coordinates);
+} else {
+  console.log("No route coordinates returned.");
+}
+
+    // Save navigation instructions
+    setNavigationSteps(result.route.instructions || []);
+
+    // Show route on map
     setShowRoute(true);
 
-  };
+    // Show first instruction
+    if (
+      result.route.instructions &&
+      result.route.instructions.length > 0
+    ) {
+      const firstInstruction =
+        result.route.instructions[0].instruction ||
+        result.route.instructions[0];
+
+      setNavigationInstruction(firstInstruction);
+
+      speakNavigationInstruction(firstInstruction);
+      setLastSpokenInstruction(firstInstruction);
+    }
+
+    // Distance
+    if (result.route.distance !== undefined) {
+      setNavigationDistance(result.route.distance);
+    }
+
+    setCurrentStepIndex(0);
+
+  } catch (error) {
+    console.error("Navigation error:", error);
+
+    if (error.code === 1) {
+      setLocationError(
+        "Location permission was denied. Please allow GPS access."
+      );
+    } else if (error.code === 2) {
+      setLocationError(
+        "Unable to determine your current location."
+      );
+    } else if (error.code === 3) {
+      setLocationError(
+        "GPS request timed out. Please try again."
+      );
+    } else {
+      setLocationError(
+        error.message || "Unable to calculate the route."
+      );
+    }
+  } finally {
+    setLocationLoading(false);
+  }
+};
 
 
   /* ============================= */
@@ -1036,6 +1364,24 @@ const [campus, setCampus] = useState(
 
             </button>
 
+            {showRoute && !navigationActive && (
+  <button
+    onClick={startNavigation}
+    className="navigation-button"
+  >
+    🧭 Start Navigation
+  </button>
+)}
+
+{navigationActive && (
+  <button
+    onClick={stopNavigation}
+    className="navigation-button stop-navigation"
+  >
+    🛑 Stop Navigation
+  </button>
+)}
+
 
             {showRoute && (
 
@@ -1205,6 +1551,30 @@ const [campus, setCampus] = useState(
         {/* ============================= */}
 
         <div className="map-area">
+           {navigationActive && (
+  <div className="navigation-panel">
+    <div className="navigation-header">
+      <span>🧭 Navigation</span>
+
+      <button
+        onClick={() => {
+          setVoiceEnabled((previous) => !previous);
+        }}
+        className="voice-toggle"
+      >
+        {voiceEnabled ? "🔊 Voice ON" : "🔇 Voice OFF"}
+      </button>
+    </div>
+
+    <div className="navigation-instruction">
+      {navigationInstruction || "Follow the route"}
+    </div>
+
+    <div className="navigation-distance">
+      📍 Distance: {navigationDistance} km
+    </div>
+  </div>
+)}
 
           <MapContainer
 
@@ -1213,8 +1583,15 @@ const [campus, setCampus] = useState(
             zoom={17}
 
             className="leaflet-map"
+            >
 
-          >
+          <UserLocationController
+  userLocation={userLocation}
+  navigationActive={navigationActive}
+  navigationRoute={navigationRoute}
+/>           
+
+          
 
             <TileLayer
 
@@ -1367,41 +1744,21 @@ const [campus, setCampus] = useState(
 
             {/* ROUTE */}
 
-            {showRoute &&
-              userLocation &&
-              selectedLocation && (
+           {showRoute && navigationRoute.length > 0 && (
+  <Polyline
+    positions={navigationRoute.map((point) => [
+      Number(point[1]),
+      Number(point[0]),
+    ])}
+    pathOptions={{
+      color: "blue",
+      weight: 7,
+      opacity: 1,
+    }}
+  />
+)}
 
-                <Polyline
-
-                  positions={[
-
-                    [
-                      userLocation.latitude,
-                      userLocation.longitude,
-                    ],
-
-                    [
-                      selectedLocation.latitude,
-                      selectedLocation.longitude,
-                    ],
-
-                  ]}
-
-                  pathOptions={{
-
-                    color: "#2563eb",
-
-                    weight: 5,
-
-                    opacity: 0.8,
-
-                    dashArray: "10, 10",
-
-                  }}
-
-                />
-
-              )}
+              
 
           </MapContainer>
 

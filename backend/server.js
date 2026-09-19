@@ -16,6 +16,15 @@ const visitorRoutes = require("./routes/visitorRoutes");
 
 app.use("/api/visitors", visitorRoutes);
 
+// Analytics routes
+const analyticsRoutes = require("./analytics/analyticsRoutes");
+
+app.use("/api/analytics", analyticsRoutes);
+
+// Navigation routes
+const navigationRoutes = require("./routes/navigationRoutes");
+
+app.use("/api/navigation", navigationRoutes);
 
 // Home route
 app.get("/", (req, res) => {

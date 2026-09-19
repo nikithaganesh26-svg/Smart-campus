@@ -62,7 +62,102 @@ const locations = [
             "food",
             "canteen"
         ]
-    }
+    },
+        {
+        name: "Block 1",
+        type: "Engineering Block",
+        latitude: 12.8689722,
+        longitude: 80.2164444,
+        aliases: ["block 1", "engineering block 1"]
+    },
+
+    {
+        name: "Block 2",
+        type: "Engineering Block",
+        latitude: 12.868993,
+        longitude: 80.216134,
+        aliases: ["block 2", "engineering block 2"]
+    },
+
+    {
+        name: "Block 3",
+        type: "Engineering Block",
+        latitude: 12.86917702208634,
+        longitude: 80.2158219537613,
+        aliases: ["block 3", "engineering block 3"]
+    },
+
+    {
+        name: "Block 4",
+        type: "Engineering Block",
+        latitude: 12.869170317649592,
+        longitude: 80.21544884937452,
+        aliases: ["block 4", "engineering block 4"]
+    },
+
+    {
+        name: "Block 5",
+        type: "Engineering Block",
+        latitude: 12.869271081066314,
+        longitude: 80.21522924495005,
+        aliases: ["block 5", "engineering block 5"]
+    },
+
+    {
+        name: "Block 9",
+        type: "Engineering Block",
+        latitude: 12.870196509827023,
+        longitude: 80.21710749571233,
+        aliases: ["block 9", "engineering block 9"]
+    },
+
+    {
+        name: "Auditorium",
+        type: "Campus Facility",
+        latitude: 12.868306614274475,
+        longitude: 80.21615230240107,
+        aliases: ["auditorium"]
+    },
+
+    {
+        name: "Admin Block",
+        type: "Administration",
+        latitude: 12.86940079190416,
+        longitude: 80.21703035092315,
+        aliases: ["admin", "admin block", "administration"]
+    },
+
+    {
+        name: "Bus Bay",
+        type: "Transport",
+        latitude: 12.87136331009537,
+        longitude: 80.2162171802526,
+        aliases: ["bus bay", "bus stop"]
+    },
+
+    {
+        name: "Trinity",
+        type: "Campus Facility",
+        latitude: 12.871568270572848,
+        longitude: 80.21558995598852,
+        aliases: ["trinity"]
+    },
+
+    {
+        name: "Boys Mess",
+        type: "Food Facility",
+        latitude: 12.868308846921508,
+        longitude: 80.21508572068402,
+        aliases: ["boys mess"]
+    },
+
+    {
+        name: "Girls Veg Mess",
+        type: "Food Facility",
+        latitude: 12.868975095786467,
+        longitude: 80.2150147009935,
+        aliases: ["girls veg mess", "girls mess"]
+    },
 ];
 
 
