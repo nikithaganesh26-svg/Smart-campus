@@ -6,7 +6,7 @@ import CampusMap from "./pages/CampusMap";
 import About from "./pages/about";
 import Login from "./pages/Login";
 import Rating from "./pages/Rating";
-
+import Chatbot from "./components/Chatbot";
 
 function App() {
 
@@ -179,13 +179,11 @@ function App() {
 
 
   return (
-    <>
-      <Navbar onLogout={handleLogout} />
-
-      {page}
-    </>
-  );
+  <>
+    <Navbar onLogout={handleLogout} />
+    {page}
+    <Chatbot />
+  </>
+);
 }
-
-
 export default App;

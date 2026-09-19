@@ -158,6 +158,186 @@ const locations = [
         longitude: 80.2150147009935,
         aliases: ["girls veg mess", "girls mess"]
     },
+        {
+        name: "Hackathon Center",
+        type: "Campus Facility",
+        latitude: 12.869468,
+        longitude: 80.216981,
+        aliases: ["hackathon center", "hackathon"]
+    },
+
+    {
+        name: "Block 8",
+        type: "Engineering Block",
+        latitude: 12.869713,
+        longitude: 80.216916,
+        aliases: ["block 8", "engineering block 8"]
+    },
+
+    {
+        name: "Lab Block 1",
+        type: "Academic Building",
+        latitude: 12.869596,
+        longitude: 80.216633,
+        aliases: ["lab block 1", "lab 1", "laboratory block 1"]
+    },
+
+    {
+        name: "Lab Block 2",
+        type: "Academic Building",
+        latitude: 12.869672,
+        longitude: 80.216202,
+        aliases: ["lab block 2", "lab 2", "laboratory block 2"]
+    },
+
+    {
+        name: "Lab Block 3",
+        type: "Academic Building",
+        latitude: 12.869603,
+        longitude: 80.216195,
+        aliases: ["lab block 3", "lab 3", "laboratory block 3"]
+    },
+
+    {
+        name: "Lab Block 4",
+        type: "Academic Building",
+        latitude: 12.869664,
+        longitude: 80.215922,
+        aliases: ["lab block 4", "lab 4", "laboratory block 4"]
+    },
+
+    {
+        name: "Lab Block 5",
+        type: "Academic Building",
+        latitude: 12.869683,
+        longitude: 80.215827,
+        aliases: ["lab block 5", "lab 5", "laboratory block 5"]
+    },
+
+    {
+        name: "Block 6 MBA Block",
+        type: "Engineering Block",
+        latitude: 12.869823,
+        longitude: 80.215412,
+        aliases: [
+            "block 6",
+            "mba block",
+            "block 6 mba",
+            "engineering block 6"
+        ]
+    },
+
+    {
+        name: "Central Library",
+        type: "Campus Facility",
+        latitude: 12.869638,
+        longitude: 80.215283,
+        aliases: [
+            "central library",
+            "library"
+        ]
+    },
+
+    {
+        name: "Classroom Block 5",
+        type: "Academic Building",
+        latitude: 12.869137,
+        longitude: 80.215296,
+        aliases: [
+            "classroom block 5",
+            "class block 5"
+        ]
+    },
+
+    {
+        name: "Drawing Hall 1 & 2",
+        type: "Academic Building",
+        latitude: 12.868905,
+        longitude: 80.215257,
+        aliases: [
+            "drawing hall",
+            "drawing hall 1",
+            "drawing hall 2",
+            "drawing halls"
+        ]
+    },
+
+    {
+        name: "Block 10",
+        type: "Engineering Block",
+        latitude: 12.868188,
+        longitude: 80.216773,
+        aliases: [
+            "block 10",
+            "engineering block 10"
+        ]
+    },
+
+    {
+        name: "Class Block 2",
+        type: "Academic Building",
+        latitude: 12.868989,
+        longitude: 80.216205,
+        aliases: [
+            "class block 2",
+            "classroom block 2"
+        ]
+    },
+
+    {
+        name: "Classroom Block 3",
+        type: "Academic Building",
+        latitude: 12.869034,
+        longitude: 80.216261,
+        aliases: [
+            "classroom block 3",
+            "class block 3"
+        ]
+    },
+
+    {
+        name: "Classroom Block 1",
+        type: "Academic Building",
+        latitude: 12.868997,
+        longitude: 80.216133,
+        aliases: [
+            "classroom block 1",
+            "class block 1"
+        ]
+    },
+
+    {
+        name: "Classroom Block 4",
+        type: "Academic Building",
+        latitude: 12.869174,
+        longitude: 80.215595,
+        aliases: [
+            "classroom block 4",
+            "class block 4"
+        ]
+    },
+
+    {
+        name: "Block 12",
+        type: "Engineering Block",
+        latitude: 12.868359276597346,
+        longitude: 80.21662017228408,
+        aliases: [
+            "block 12",
+            "engineering block 12"
+        ]
+    },
+
+    {
+        name: "Block 11",
+        type: "Engineering Block",
+        latitude: 12.86855800462408,
+        longitude: 80.21662553670177,
+        aliases: [
+            "block 11",
+            "engineering block 11"
+        ]
+    },
 ];
 
 
