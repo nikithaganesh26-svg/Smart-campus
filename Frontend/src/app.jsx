@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import Chatbot from "./components/Chatbot";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -130,7 +131,12 @@ function App() {
 
   if (showRating) {
 
-    return <Rating />;
+    return (
+      <>
+        <Rating />
+        <SpeedInsights />
+      </>
+    );
 
   }
 
@@ -142,9 +148,12 @@ function App() {
   if (!isLoggedIn) {
 
     return (
-      <Login
-        onLoginSuccess={handleLoginSuccess}
-      />
+      <>
+        <Login
+          onLoginSuccess={handleLoginSuccess}
+        />
+        <SpeedInsights />
+      </>
     );
 
   }
@@ -184,6 +193,7 @@ function App() {
 
       {page}
       <Chatbot />
+      <SpeedInsights />
     </>
   );
 }
