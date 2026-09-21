@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import Chatbot from "./components/Chatbot";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import CampusMap from "./pages/CampusMap";
@@ -183,6 +183,7 @@ function App() {
       <Navbar onLogout={handleLogout} />
 
       {page}
+      <Chatbot />
     </>
   );
 }
