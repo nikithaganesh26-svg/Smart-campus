@@ -1020,7 +1020,7 @@ const handleShowRoute = async () => {
 
     // Send current GPS location to backend
     const response = await fetch(
-      "http://localhost:5000/api/navigation/route-from-location",
+    `${import.meta.env.VITE_API_URL}/api/navigation/route-from-location`,
       {
         method: "POST",
         headers: {
