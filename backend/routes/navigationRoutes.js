@@ -73,7 +73,8 @@ router.post("/route-from-location", async (req, res) => {
         const {
             latitude,
             longitude,
-            destinationName
+            destinationName,
+            campus
         } = req.body;
 
 
@@ -96,7 +97,7 @@ router.post("/route-from-location", async (req, res) => {
             await getRouteByCoordinates(
                 latitude,
                 longitude,
-                destinationName
+                destinationName,campus
             );
 
 

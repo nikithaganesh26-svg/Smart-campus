@@ -1930,6 +1930,66 @@
           ]
         ]
       }
-    }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Main Gate",
+        "category": "Entrance",
+        "campus": "technology"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21802724054089,
+          12.870428451740137
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Temple",
+        "category": "Religious",
+        "campus": "technology"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.21773600621695,
+      12.869707875378467
+    ]
+  }
+},
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Chapel",
+    "category": "Religious",
+    "campus": "technology"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      80.21774008870446,
+      12.869586805045989
+    ]
+  }
+},
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Mosque",
+    "category": "Religious",
+    "campus": "technology"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      80.21778032183558,
+      12.869476982132783
+    ]
+  }
+}
   ]
 }

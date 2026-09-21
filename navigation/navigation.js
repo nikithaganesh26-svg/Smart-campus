@@ -332,7 +332,8 @@ async function getRoute(
 async function getRouteByCoordinates(
     startLatitude,
     startLongitude,
-    destinationName
+    destinationName,
+    campus
 ) {
 
     // --------------------------------------------------------
@@ -340,7 +341,8 @@ async function getRouteByCoordinates(
     // --------------------------------------------------------
 
     const destination =
-        findLocation(destinationName);
+    findLocation(destinationName, campus);
+
 
 
     // --------------------------------------------------------
